@@ -1,0 +1,19 @@
+settings.properties
+
+# Pliki systemowe
+__pycache__/
+*.pyc
+*.pyo
+*.log
+
+# Środowisko wirtualne
+venv/
+.env
+
+# Pliki baz danych
+*.sqlite3
+
+# Pliki IDE
+.vscode/
+.idea/
+*.swp
