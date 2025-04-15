@@ -4,7 +4,7 @@ import ApartmentCard from "./ApartmentCard";
 function FutureApartments() {
   return (
     <div className="apartment-cards">
-      <h2>Future apartments coming soon</h2>
+      <h3>Future apartments coming soon</h3>
       <div className="container">
         <ApartmentCard
           title="SOON"

@@ -3,7 +3,7 @@ import React from "react";
 function Header() {
   return (
     <header>
-      <h1>VIRTUALSPACE</h1>
+      <h2>VIRTUALSPACE</h2>
     </header>
   );
 }

@@ -5,7 +5,7 @@ function ApartmentCard(props) {
   return (
     <div className="card">
       <img className="image" src={apartImg}></img>
-      <h3>{props.title}</h3>
+      <h4>{props.title}</h4>
       <p>{props.description}</p>
     </div>
   );

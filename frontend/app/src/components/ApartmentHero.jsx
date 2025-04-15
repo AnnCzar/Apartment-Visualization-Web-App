@@ -1,5 +1,7 @@
 import React from "react";
 import apartImg from "../assets/apartment.png";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 
 function ApartmentHero() {
   return (
@@ -8,8 +10,11 @@ function ApartmentHero() {
       <div className="container">
         <div className="item">
           <img className="image" src={apartImg}></img>
-          <h3>A modern apartment - see its potential.</h3>
-          <button>More</button>
+          <h4>A modern apartment - see its potential.</h4>
+          <button className="more" type="button">
+            More
+            {<FontAwesomeIcon icon={faChevronRight} />}
+          </button>
         </div>
       </div>
     </div>
