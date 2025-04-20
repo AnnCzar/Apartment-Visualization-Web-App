@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import apartImg from "../assets/apartment-hero.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
 import DetailRow from "./DetailRow";
@@ -9,7 +8,7 @@ function ApartmentDetails() {
   return (
     <div className="apartment-details">
       <div className="details-item">
-        <img className="image" src={apartImg}></img>
+        <iframe></iframe>
         <div className="details">
           <h4>APARTMENT DETAILS</h4>
           <div className="details-box">

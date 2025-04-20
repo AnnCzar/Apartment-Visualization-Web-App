@@ -162,6 +162,7 @@ p {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   border-radius: var(--radius);
+  height: 80vh;
 }
 
 .details {
@@ -171,9 +172,11 @@ p {
   top: 5%;
 }
 
-.details-item img {
+.details-item iframe {
   grid-column: 1/4;
-  height: auto;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius);
 }
 .detail-row {
   display: flex;
@@ -209,6 +212,10 @@ p {
   flex-direction: column;
   gap: 12px;
   padding: 10px;
+}
+
+iframe {
+  border: 0;
 }
 
 @media only screen and (max-width: 1220px) {
