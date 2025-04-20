@@ -9,7 +9,7 @@ function ApartmentHero() {
     <div className="apartment-hero">
       <h2>Choose your future place</h2>
       <div className="container">
-        <div className="item">
+        <div className="hero-item">
           <img className="image" src={apartImg}></img>
           <h4>A modern apartment - see its potential.</h4>
           <Link to="/product" className="more link">

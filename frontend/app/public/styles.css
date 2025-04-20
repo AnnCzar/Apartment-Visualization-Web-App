@@ -84,7 +84,7 @@ p {
   margin-bottom: 20px;
   padding-bottom: 50px;
 }
-.item {
+.hero-item {
   background-color: #8fa78f;
   grid-column: 1/4;
   display: grid;
@@ -92,7 +92,7 @@ p {
   grid-template-rows: repeat(4, 1fr);
   border-radius: var(--radius);
 }
-.item h4 {
+.hero-item h4 {
   color: white;
   grid-row: 2/4;
   padding: 0px 20px;
@@ -100,7 +100,7 @@ p {
   justify-self: center;
 }
 
-.item img {
+.hero-item img {
   grid-column: 1/3;
   grid-row: 1/5;
   height: auto;
@@ -150,6 +150,65 @@ p {
 
 .link {
   text-decoration: none;
+}
+.apartment-details {
+  max-width: 95%;
+  margin: 0 auto;
+  margin-top: 2%;
+}
+
+.details-item {
+  background-color: var(--background);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-radius: var(--radius);
+}
+
+.details {
+  grid-column: 4/5;
+  text-align: center;
+  position: relative;
+  top: 5%;
+}
+
+.details-item img {
+  grid-column: 1/4;
+  height: auto;
+}
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 25px;
+  background-color: #e8e3d856;
+  border-radius: var(--radius);
+}
+.details-box {
+  background-color: white;
+  width: 90%;
+  margin: 0 auto;
+  position: relative;
+  top: 5%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  border-radius: var(--radius);
+}
+.toggle-button {
+  background: none;
+  border: none;
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 5px;
+  align-items: center;
+}
+.more-details {
+  max-height: 200px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 10px;
 }
 
 @media only screen and (max-width: 1220px) {
