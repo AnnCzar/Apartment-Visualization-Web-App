@@ -1,7 +1,8 @@
 import React from "react";
-import apartImg from "../assets/apartment2.png";
+import apartImg from "../assets/apartment-hero.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "react-router-dom";
 
 function ApartmentHero() {
   return (
@@ -11,10 +12,10 @@ function ApartmentHero() {
         <div className="item">
           <img className="image" src={apartImg}></img>
           <h4>A modern apartment - see its potential.</h4>
-          <button className="more" type="button">
+          <Link to="/product" className="more link">
             More
             {<FontAwesomeIcon icon={faChevronRight} />}
-          </button>
+          </Link>
         </div>
       </div>
     </div>

@@ -148,6 +148,10 @@ p {
   column-gap: 10px;
 }
 
+.link {
+  text-decoration: none;
+}
+
 @media only screen and (max-width: 1220px) {
   h1 {
     font-size: 34px;

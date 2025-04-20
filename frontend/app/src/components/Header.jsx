@@ -1,9 +1,12 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 function Header() {
   return (
     <header>
-      <h2>VIRTUALSPACE</h2>
+      <Link to="/" className="link">
+        <h2>VIRTUALSPACE</h2>
+      </Link>
     </header>
   );
 }
