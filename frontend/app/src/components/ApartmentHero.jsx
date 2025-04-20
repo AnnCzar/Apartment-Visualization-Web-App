@@ -1,5 +1,5 @@
 import React from "react";
-import apartImg from "../assets/apartment.png";
+import apartImg from "../assets/apartment2.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 
