@@ -58,7 +58,7 @@ class V3DApp extends React.Component {
     });
 
     let currentCameraIndex = 0;
-    const cameraNames = ['Camera(FPS)', 'Camera(orbit)'];
+    const cameraNames = ['Camera(orbit)', 'Camera(FPS)'];
     const defaultCameraSettings = {};
 
     this.#switchButton.addEventListener('click', () => {

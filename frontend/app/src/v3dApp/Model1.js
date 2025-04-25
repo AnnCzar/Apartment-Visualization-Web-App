@@ -404,4 +404,3 @@ function runCode(app, puzzles) {
 }
 
 export { createApp };
-
