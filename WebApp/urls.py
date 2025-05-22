@@ -18,6 +18,12 @@ Including another URLconf
 from django.urls import path
 
 from django.contrib import admin
+
+from ApartmentVisualization import views
+
 urlpatterns = [
        path('admin/', admin.site.urls),
+       path('basic/<str:model_name>/', views.get_apartment_basic_info, name='apartment_basic'),
+       path('developer/<str:model_name>/', views.get_developer_info, name='developer_info'),
+       path('rooms/<str:model_name>/', views.get_rooms_for_model, name='apartment_rooms'),
 ]

@@ -2,9 +2,7 @@ from django.db import models
 
 # Create your models here.
 
-# modele: id, model nazwa, metraz suma, ilosc pokoi, pietro, lokalizacja, cena, deweloper, mail deweleopera
-#
-# pomieszczenia, id nazwa pomieszczeni, metraz, fk do tabeli z modelami
+
 class Apartment_model(models.Model):
     name = models.CharField(max_length=100)
     area_sum = models.FloatField()
