@@ -1,9 +1,11 @@
 import React, {useEffect, useState} from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
+import {faChevronDown, faChevronRight, faChevronUp} from "@fortawesome/free-solid-svg-icons";
 import DetailRow from "./DetailRow";
 import V3DApp from "./V3DApp";
 import {useParams} from "react-router-dom";
+import ContactForm from "./ContactForm.jsx";
+import Modal from "./Modal.jsx";
 
 function ApartmentDetails() {
   const [showMore, setShowMore] = useState(false);
@@ -15,6 +17,12 @@ function ApartmentDetails() {
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const [modalIsVisible, setModalIsVisible] = useState(false);
+
+  function hideModal(){
+    setModalIsVisible(false);
+  }
 
 
   useEffect(() => {
@@ -83,49 +91,57 @@ function ApartmentDetails() {
   }
 
     return (
-    <div className="apartment-details">
-      <div className="details-item">
-        <div className="verge3d-app">
-          <V3DApp modelName={modelName} />
-        </div>
-        <div className="details">
-          <h4>APARTMENT DETAILS </h4>
-          <div className="details-box">
-            <DetailRow label="AREA" value={`${basicInfo.area_sum} m²`} />
-            <DetailRow label="FLOOR" value={basicInfo.floor} />
-            <DetailRow label="ROOMS" value={basicInfo.rooms_sum} />
-
-            <button
-              className="toggle-button"
-              onClick={() => setShowMore(!showMore)}
-            >
-              <p>MORE DETAILS </p>
-              {showMore ? (
-                <FontAwesomeIcon icon={faChevronUp} />
-              ) : (
-                <FontAwesomeIcon icon={faChevronDown} />
-              )}
-            </button>
-
-            {showMore && (
-              <div className="more-details">
-                {rooms.length > 0 ? (
-                  rooms.map((room, index) => (
-                    <DetailRow
-                      key={index}
-                      label={room.name_room}
-                      value={`${room.area} m²`}
-                    />
-                  ))
-                ) : (
-                  <div>No rooms data available</div>
-                )}
+        <>
+          {modalIsVisible?<Modal onClose={hideModal}><ContactForm onClose={hideModal}/></Modal>:null}
+          <div className="apartment-details">
+            <div className="details-item">
+              <div className="verge3d-app">
+                <V3DApp modelName={modelName} />
               </div>
-            )}
+              <div className="details">
+                <h4>APARTMENT DETAILS </h4>
+                <div className="info">
+                <div className="details-box">
+                  <DetailRow label="AREA" value={`${basicInfo.area_sum} m²`} />
+                  <DetailRow label="FLOOR" value={basicInfo.floor} />
+                  <DetailRow label="ROOMS" value={basicInfo.rooms_sum} />
+
+                  <button
+                    className="toggle-button"
+                    onClick={() => setShowMore(!showMore)}
+                  >
+                    <p>MORE DETAILS </p>
+                    {showMore ? (
+                      <FontAwesomeIcon icon={faChevronUp} />
+                    ) : (
+                      <FontAwesomeIcon icon={faChevronDown} />
+                    )}
+                  </button>
+
+                  {showMore && (
+                    <div className="more-details">
+                      {rooms.length > 0 ? (
+                        rooms.map((room, index) => (
+                          <DetailRow
+                            key={index}
+                            label={room.name_room}
+                            value={`${room.area} m²`}
+                          />
+                        ))
+                      ) : (
+                        <div>No rooms data available</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+                  <button className="contact link" onClick={()=>setModalIsVisible(true)}>
+                    Contact with developer
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-    </div>
+        </>
   );
 }
 //    return (
