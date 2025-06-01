@@ -197,7 +197,7 @@ p {
 .detail-row {
   display: flex;
   justify-content: space-between;
-  padding: 8px 25px;
+  padding: 8px 20px;
   background-color: #e8e3d856;
   border-radius: var(--radius);
 }
@@ -317,6 +317,14 @@ form textarea {
   padding: 0;
   overflow: hidden;
   z-index: 2;
+}
+.detail-label{
+  max-width: 65%;
+  text-align: left;
+}
+.detail-value{
+  max-width: 35%;
+  text-align: right;
 }
 
 @media only screen and (max-width: 1220px) {
