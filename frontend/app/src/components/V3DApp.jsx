@@ -1,85 +1,327 @@
 import React from 'react';
-import { createApp } from '../v3dApp/Model1.js';
+import { createApp as createAppModel1 } from '../v3dApp/Model1.js';
 import '../v3dApp/Model1.css';
-import {commonjs} from "globals";
+import { createApp as createAppModel3 } from '../v3dApp2/model3Marta.js';
+import '../v3dApp2/model3Marta.css';
 
 class V3DApp extends React.Component {
-  #app = null;
+   #app = null;
   #PL = null;
   #switchButton = null;
   #infoPanel = null;
   #infoPoints = [];
-
-
-  #defaultCameraSettings = {}; // do przechowywania zmiennych domyślnych kamer
-
+  #colorChangePoints = [];
+  #colorChangePanel = null;
+  #activeModelKey = this.props.modelName;
+  #defaultCameraSettings = {};
   #currentCamera = null;
   #uuid = window.crypto.randomUUID();
   #containerId = `v3d-container-${this.#uuid}`;
   #fsButtonId = `fullscreen-button-${this.#uuid}`;
-  #sceneURL = '/v3dApp/Model1.gltf';
+  #sceneURL = null;
+  #roomData = {};
+  #colors = {};
+  #materialMap = {};
+  #currentWallMaterialName = null;
+  #isLoading = false;
 
+    #models = {
+  Model1: {
+    modelName: 'Model1',
+    sceneURL: '/v3dApp/Model1.gltf',
+    createApp: createAppModel1,
+    colors: {
+      "wall1_color_1": "#00174EFF",
+      "wall_1_color_2": "#4E0B07FF",
+      "wall_1_color_3": "#4E433EFF",
+      "wall_1_color_4": "#032B0AFF",
+      "wall_1_color_5": "#CECCCAFF"
+    },
+    materialMap: {
+      "#00174EFF": "Blue office wall",
+      "#4E0B07FF": "Red office wall",
+      "#4E433EFF": "Beige office wall",
+      "#032B0AFF": "Green office wall",
+      "#CECCCAFF": "White office wall.001"
+    },
+    roomData: {
+      'InfoPoint_kitchen+livingroom': { name: 'Kuchnia z salonem', area: '33.5 m²' },
+        'InfoPoint_corridor': { name: 'Korytarz', area: '15.2 m²' },
+        'InfoPoint_office': { name: 'Biuro', area: '6.6 m²' },
+        'InfoPoint_bathroom': { name: 'Łazienka', area: '6 m²' },
+        'InfoPoint_room1': { name: 'Pokój 1', area: '10.5 m²' },
+        'InfoPoint_room2': { name: 'Pokój 2', area: '12.4 m²' },
+        'InfoPoint_room3': { name: 'Pokój 3', area: '13.5 m²' },
+        'InfoPoint_toilet': { name: 'Toaleta', area: '2 m²' },
+        'InfoPoint_wardrobe': { name: 'Garderoba', area: '3.1 m²' }
+    },
+    currentWallMaterial: "White office wall.001"
+  },
 
-   // Room data for info points
-  #roomData = {
-    'InfoPoint_kitchen+livingroom': { name: 'Kuchnia z salonem', area: '33.5 m²' },
-    'InfoPoint_corridor': { name: 'Korytarz', area: '15.2 m²' },
-    'InfoPoint_office': { name: 'Biuro', area: '6.6 m²' },
-    'InfoPoint_bathroom': { name: 'Łazienka', area: '6 m²' },
-    'InfoPoint_room1': { name: 'Pokój 1', area: '10.5 m²' },
-    'InfoPoint_room2': { name: 'Pokój 2', area: '12.4 m²' },
-    'InfoPoint_room3': { name: 'Pokój 3', area: '13.5 m²' },
-    'InfoPoint_toilet': { name: 'Toaleta', area: '2 m²' },
-    'InfoPoint_wardrobe': { name: 'Garderoba', area: '3.1 m²' },
-  };
+  Model3: {
+    modelName: 'Model3',
+    sceneURL: '/v3dApp2/model3Marta.gltf',
+    createApp: createAppModel3,
+    colors: {
+      "wall1_color_1": "#131752FF",
+      "wall_1_color_2": "#3F0002FF",
+      "wall_1_color_3": "#A7A7A7FF",
+      "wall_1_color_4": "#122B00FF",
+      "wall_1_color_5": "#23110DFF",
+      "wall_1_color_6": "#403E3EFF"
+    },
+    materialMap: {
+      "#131752FF": "Blue plaster wall",
+      "#3F0002FF": "Red plaster wall",
+      "#A7A7A7FF": "White plaster wall",
+      "#122B00FF": "Green plaster wall ",
+      "#23110DFF": "Brown plaster wall",
+      "#403E3EFF": "Painted Plaster Wall"
+    },
+    roomData: {
+      'InfoPoint_livingroom': { name: 'Kuchnia z salonem', area: '42,9 m²' },
+        'InfoPoint_hall': { name: 'Przedpokój', area: '5,9 m²' },
+        'InfoPoint_corridor': { name: 'Korytarz', area: '12.0 m²' },
+        'InfoPoint_bathroom': { name: 'Łazienka', area: '7,8 m²' },
+        'InfoPoint_room1': { name: 'Pierwsza sypialnia', area: '15,2 m²' },
+        'InfoPoint_room2': { name: 'Druga sypialnia', area: '19,1 m²' },
+        'InfoPoint_room3': { name: 'Trzecia sypialnia', area: '14,72 m²' },
+        'InfoPoint_garderoba': { name: 'Garderoba', area: '3,6 m²' }
+    },
+    currentWallMaterial: "Painted Plaster Wall"
+  }
+};
 
-  async loadApp() {
-    if (!document.getElementById(this.#containerId)) {
-      console.error(`Container element with id ${this.#containerId} not found`);
-      return;
+    getCurrentCreateApp() {
+    const model = this.#models[this.#activeModelKey];
+    if (!model || !model.createApp) {
+      throw new Error(`CreateApp function not found for model: ${this.#activeModelKey}`);
     }
-
-    ({ app: this.#app, PL: this.#PL } = await createApp({
-      containerId: this.#containerId,
-      fsButtonId: this.#fsButtonId,
-      sceneURL: this.#sceneURL,
-    }));
-
-  const waitForCameras = async () => {
-    let retries = 20;
-    while (
-      (!this.#app?.scene ||
-        !this.#app.scene.getObjectByName('Camera(orbit)') ||
-        !this.#app.scene.getObjectByName('Camera(FPS)')) &&
-      retries-- > 0
-    ) {
-      await new Promise(resolve => setTimeout(resolve, 250));
-    }
-
-    if (!this.#app?.scene) {
-      console.warn('Scene is still not available after retries');
-      return;
-    }
-  };
-  await waitForCameras();
-
-  this.getDefaultCamerasSettings()
-   this.initCameraSwitchButton();
-  this.#currentCamera = 'Camera(orbit)';
-        // Initialize room info functionality
-    this.findInfoPoints();
+    return model.createApp;
   }
 
-  // Find and setup info points
+
+  async loadApp() {
+    if (this.#isLoading) {
+      console.log('App is already loading, skipping...');
+      return;
+    }
+
+    this.#isLoading = true;
+
+    try {
+      await this.waitForDOM();
+
+      const container = document.getElementById(this.#containerId);
+      if (!container) {
+        throw new Error(`Container element with id ${this.#containerId} not found`);
+      }
+
+      if (container.offsetWidth === 0 || container.offsetHeight === 0) {
+        console.warn('Container has zero dimensions, setting default size');
+        container.style.width = container.style.width || '100%';
+        container.style.height = container.style.height || '500px';
+
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+
+      await this.switchModel(this.props.modelName);
+
+      const currentModel = this.#models[this.#activeModelKey];
+
+      if (!this.checkWebGLSupport()) {
+        throw new Error('WebGL is not supported in this browser');
+      }
+
+      const createApp = this.getCurrentCreateApp();
+
+      console.log('Creating V3D app with:', {
+        containerId: this.#containerId,
+        fsButtonId: this.#fsButtonId,
+        sceneURL: this.#sceneURL
+      });
+
+      const { app, PL } = await createApp({
+        containerId: this.#containerId,
+        fsButtonId: this.#fsButtonId,
+        sceneURL: this.#sceneURL
+      });
+
+      if (!app) {
+        throw new Error('Failed to create V3D app - app is null');
+      }
+
+      this.#app = app;
+      this.#PL = PL;
+
+      const success = await this.waitForCameras();
+      if (!success) {
+        throw new Error('Failed to initialize cameras');
+      }
+
+      // Initialize the rest of the functionality
+      this.getDefaultCamerasSettings();
+      this.initCameraSwitchButton();
+      this.#currentCamera = 'Camera(orbit)';
+      this.findInfoPoints();
+
+      console.log('V3D app loaded successfully');
+
+    } catch (error) {
+      console.error('Error loading V3D app:', error);
+      this.handleLoadError(error);
+    } finally {
+      this.#isLoading = false;
+    }
+  }
+
+  async waitForDOM() {
+    return new Promise((resolve) => {
+      if (document.readyState === 'complete') {
+        resolve();
+      } else {
+        const checkReady = () => {
+          if (document.getElementById(this.#containerId)) {
+            resolve();
+          } else {
+            requestAnimationFrame(checkReady);
+          }
+        };
+        checkReady();
+      }
+    });
+  }
+
+  checkWebGLSupport() {
+    try {
+      const canvas = document.createElement('canvas');
+      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      if (!gl) {
+        console.error('WebGL not supported');
+        return false;
+      }
+      // Test basic WebGL functionality
+      gl.clearColor(0.0, 0.0, 0.0, 1.0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      return true;
+    } catch (e) {
+      console.error('WebGL support check failed:', e);
+      return false;
+    }
+  }
+
+  async waitForCameras() {
+    let retries = 30; // Increased retries
+    while (retries-- > 0) {
+      if (this.#app?.scene &&
+          this.#app.scene.getObjectByName('Camera(orbit)') &&
+          this.#app.scene.getObjectByName('Camera(FPS)')) {
+        return true;
+      }
+      await new Promise(resolve => setTimeout(resolve, 200));
+    }
+
+    console.warn('Cameras not found after waiting');
+    return false;
+  }
+
+  handleLoadError(error) {
+    // Clean up on error
+    if (this.#app) {
+      try {
+        this.#app.dispose();
+      } catch (e) {
+        console.error('Error disposing app:', e);
+      }
+      this.#app = null;
+    }
+
+    const container = document.getElementById(this.#containerId);
+    if (container) {
+      container.innerHTML = `
+        <div style="
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: 100%;
+          background: #f5f5f5;
+          color: #666;
+          font-family: Arial, sans-serif;
+          text-align: center;
+          padding: 20px;
+        ">
+          <div>
+            <h3>Failed to load 3D viewer</h3>
+            <p>Please try refreshing the page or check your browser's WebGL support.</p>
+            <small>Error: ${error.message}</small>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  async switchModel(modelKey) {
+    if (!this.#models[modelKey]) {
+      console.warn(`Model "${modelKey}" nie istnieje`);
+      return;
+    }
+
+    this.#activeModelKey = modelKey;
+    const model = this.#models[modelKey];
+
+    this.#sceneURL = model.sceneURL;
+    this.#colors = model.colors;
+    this.#materialMap = model.materialMap;
+    this.#roomData = model.roomData;
+    this.#currentWallMaterialName = model.currentWallMaterial;
+
+    // Clean up existing app
+    if (this.#app) {
+      try {
+        this.disposeApp();
+      } catch (e) {
+        console.error('Error disposing previous app:', e);
+      }
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.modelName !== this.props.modelName) {
+      this.handleModelChange();
+    }
+  }
+
+  handleModelChange = async () => {
+    if (!this.#isLoading) {
+      await this.switchModel(this.props.modelName);
+      await this.loadApp();
+    }
+  };
+
   findInfoPoints() {
     if (!this.#app || !this.#app.scene) {
       console.warn('App or scene not initialized yet');
       return;
 
     }
-
     // Clear existing info points
     this.#infoPoints = [];
+    this.#colorChangePoints = [];
+
+    const textureLoader = new window.v3d.TextureLoader();
+   const spriteMap = textureLoader.load(
+  '/public/v3dApp/paint-brush-solid.svg',
+  (texture) => {
+    console.log(' Tekstura załadowana pomyślnie:', texture.image?.src || texture);
+  },
+  undefined,
+  (error) => {
+    console.error(' Błąd podczas ładowania tekstury:', error);
+  }
+);
+    const iconScale = 0.2;
+    const borderScaleFactor = 1.3;
+
 
     // Find all objects whose name starts with "InfoPoint_"
     this.#app.scene.traverse((object) => {
@@ -109,16 +351,54 @@ class V3DApp extends React.Component {
         this.#app.scene.add(indicator);
         this.#infoPoints.push(indicator);
       }
+
+      if (object.name.startsWith('PaintIcon_')) {
+      console.log(`Found color change point: ${object.name}`);
+
+      const borderMaterial = new window.v3d.SpriteMaterial({
+        map: spriteMap,
+        color: 0x000000,
+      });
+
+      const borderSprite = new window.v3d.Sprite(borderMaterial);
+      borderSprite.position.copy(object.position);
+      borderSprite.quaternion.copy(object.quaternion);
+      borderSprite.scale.copy(object.scale).multiplyScalar(iconScale * borderScaleFactor);
+      borderSprite.renderOrder = 998;
+
+      const spriteMaterial = new window.v3d.SpriteMaterial({
+        map: spriteMap,
+      });
+
+      const indicator = new window.v3d.Sprite(spriteMaterial);
+      indicator.position.copy(object.position);
+      indicator.quaternion.copy(object.quaternion);
+      indicator.scale.copy(object.scale).multiplyScalar(iconScale);
+      indicator.userData.colorPointName = object.name;
+      indicator.visible = true;
+      indicator.renderOrder = 999;
+      indicator.matrixWorldNeedsUpdate = true;
+
+      this.#app.scene.add(borderSprite);
+      this.#app.scene.add(indicator);
+      this.#colorChangePoints.push(indicator);
+      this.#colorChangePoints.push(borderSprite);
+    }
     });
+
+
     console.log(`Found ${this.#infoPoints.length} info points`);
+    console.log(`Found ${this.#colorChangePoints.length / 2} color change points`);
 
     // Ustaw początkową widoczność punktów na podstawie aktualnej kamery
     const isOrbitCamera = this.#currentCamera === 'Camera(orbit)';
     this.toggleInfoPoints(this.#currentCamera);
+    this.toggleColorPoints(this.#currentCamera)
     console.log(`Initial info points visibility: ${isOrbitCamera} for camera: ${this.#currentCamera}`);
 
     // Create info panel and setup click detection
     this.createInfoPanel();
+    this.createColorChangePanel();
     this.setupClickDetection();
   }
 
@@ -156,47 +436,99 @@ class V3DApp extends React.Component {
       console.error('Container not found');
     }
   }
- // Setup click detection for info points
-  setupClickDetection() {
-    const raycaster = new window.v3d.Raycaster();
-    const mouse = new window.v3d.Vector2();
+
+  createColorChangePanel() {
+    console.log('Tworzenie panelu zmiany koloru');
+
+    if (this.#colorChangePanel && this.#colorChangePanel.parentNode) {
+        this.#colorChangePanel.parentNode.removeChild(this.#colorChangePanel);
+    }
+
+    this.#colorChangePanel = document.createElement('div');
+    this.#colorChangePanel.id = `color-change-panel-${this.#uuid}`;
+
+    this.#colorChangePanel.style.position = 'absolute';
+    this.#colorChangePanel.style.backgroundColor = 'rgba(238, 231, 231, 0.47)'; // Ciemniejsze tło
+    this.#colorChangePanel.style.color = 'white';
+    this.#colorChangePanel.style.padding = '15px';
+    this.#colorChangePanel.style.borderRadius = '5px';
+    this.#colorChangePanel.style.border = '2px solidrgb(234, 235, 224)'; // Dodaj obramowanie
+    this.#colorChangePanel.style.display = 'none';
+    this.#colorChangePanel.style.zIndex = '9999'; // Bardzo wysoki z-index
+    this.#colorChangePanel.style.pointerEvents = 'none';
+    this.#colorChangePanel.style.fontFamily = 'Arial, sans-serif';
+    this.#colorChangePanel.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.3)';
+    this.#colorChangePanel.style.minWidth = '200px'; // Ustaw minimalną szerokość
 
     const container = document.getElementById(this.#containerId);
     if (container) {
-      container.addEventListener('click', (event) => {
-        // console.log('Click detected');
-
-        // Calculate mouse position
-        const rect = container.getBoundingClientRect();
-        mouse.x = ((event.clientX - rect.left) / container.clientWidth) * 2 - 1;
-        mouse.y = -((event.clientY - rect.top) / container.clientHeight) * 2 + 1;
-        // console.log('Mouse position:', mouse.x, mouse.y);
-
-        // Update raycaster
-        raycaster.setFromCamera(mouse, this.#app.camera);
-
-        // Check intersections with info points
-        const intersects = raycaster.intersectObjects(this.#infoPoints);
-        // console.log('Number of intersections:', intersects.length);
-
-        if (intersects.length > 0) {
-          console.log('Hit point:', intersects[0].object.userData.infoPointName);
-          const infoPointName = intersects[0].object.userData.infoPointName;
-          const room = this.#roomData[infoPointName];
-
-          if (room) {
-            this.showRoomInfo(room, event.clientX, event.clientY);
-          } else {
-            console.log('No data for room:', infoPointName);
-          }
-        } else {
-          this.hideRoomInfo();
-        }
-      });
+        container.appendChild(this.#colorChangePanel);
+        console.log('Panel dodany do kontenera:', container);
     } else {
-      console.error('Container not found for click detection');
+        console.error('Nie znaleziono kontenera v3d-container');
+
+        // Awaryjnie dodaj do body, jeśli kontener nie istnieje
+        document.body.appendChild(this.#colorChangePanel);
+        console.log('Panel dodany awaryjnie do body');
     }
+
+
+
+
   }
+
+// Setup click detection for info points and color change points
+setupClickDetection() {
+  const raycaster = new window.v3d.Raycaster();
+  const mouse = new window.v3d.Vector2();
+
+  const container = document.getElementById(this.#containerId);
+  if (!container) {
+    console.error('Container not found for click detection');
+    return;
+  }
+
+  container.addEventListener('click', (event) => {
+    const rect = container.getBoundingClientRect();
+    mouse.x = ((event.clientX - rect.left) / container.clientWidth) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / container.clientHeight) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, this.#app.camera);
+
+    // 🔹 1. Sprawdzenie kliknięcia w infoPoints
+    const infoIntersects = raycaster.intersectObjects(this.#infoPoints);
+    if (infoIntersects.length > 0) {
+      const point = infoIntersects[0].object;
+      console.log('Hit infoPoint:', point.userData.infoPointName);
+
+      const room = this.#roomData[point.userData.infoPointName];
+      if (room) {
+        this.showRoomInfo(room, event.clientX, event.clientY);
+      } else {
+        console.log('No data for room:', point.userData.infoPointName);
+      }
+
+      return;
+    }
+
+    const colorIntersects = raycaster.intersectObjects(this.#colorChangePoints);
+    if (colorIntersects.length > 0) {
+      const point = colorIntersects[0].object;
+
+      this.showColorChangePanel(
+        point.userData.colorPointName,
+        event.clientX,
+        event.clientY
+      );
+
+      return;
+    }
+
+    this.hideRoomInfo();
+    this.hideColorChangePanel?.(); // użyj opcjonalnego wywołania, jeśli metoda nie zawsze istnieje
+  });
+}
+
   // Show room information
   showRoomInfo(room, x, y) {
     console.log('Attempting to show info:', room, x, y);
@@ -217,6 +549,130 @@ class V3DApp extends React.Component {
     console.log('Panel should be visible now:', this.#infoPanel);
   }
 
+  showColorChangePanel(x, y, app) {
+      if (!this.#colorChangePanel) {
+        console.error('Panel nie istnieje!');
+        return;
+    }
+      this.#colorChangePanel.innerHTML = `
+        <h3 style="margin: 0 0 10px 0; font-size: 16px;">Zmień kolor ściany</h3>
+        <div id="color-options" style="display: flex; gap: 10px; flex-wrap: wrap;"></div>
+    `;
+      const colorOptionsDiv = this.#colorChangePanel.querySelector('#color-options');
+
+    for (const [id, hex] of Object.entries(this.#colors)) {
+        const colorButton = document.createElement('div');
+        colorButton.style.width = '30px';
+        colorButton.style.height = '30px';
+        colorButton.style.borderRadius = '5px';
+        colorButton.style.backgroundColor = hex;
+        colorButton.style.cursor = 'pointer';
+        colorButton.title = hex;
+        colorButton.style.border = '2px solid white';
+        colorButton.style.boxShadow = '0 0 5px rgba(0,0,0,0.5)';
+
+        colorButton.addEventListener('click', () => {
+            this.changeWallColor(hex, app);
+            // colorChangePanel.style.display = 'none';
+        });
+
+        colorOptionsDiv.appendChild(colorButton);
+      }
+
+      this.#colorChangePanel.style.left = `${x + 15}px`;
+      this.#colorChangePanel.style.top = `${y - 15}px`;
+      this.#colorChangePanel.style.display = 'block';
+      this.#colorChangePanel.style.pointerEvents = 'auto';
+}
+
+
+shouldSkipObject(object) {
+    let current = object;
+    while (current) {
+        // Sprawdź nazwę obiektu
+        if (current.name && current.name.startsWith('NoColorChange_')) {
+            return true;
+        }
+        // Sprawdź userData
+        if (current.userData && current.userData.noColorChange) {
+            return true;
+        }
+        current = current.parent;
+    }
+    return false;
+}
+
+changeWallColor(hex, app) {
+    const targetMaterialName = this.#materialMap[hex];
+
+    if (!targetMaterialName) {
+        console.warn(`Brak przypisanego materiału dla koloru ${hex}`);
+        return;
+    }
+
+    let newMaterial = null;
+
+    // Szukamy materiału docelowego
+    this.#app.scene.traverse((object) => {
+        if (object.material) {
+            const materials = Array.isArray(object.material) ? object.material : [object.material];
+            for (const mat of materials) {
+                if (mat.name === targetMaterialName) {
+                    newMaterial = mat;
+                    break;
+                }
+            }
+        }
+    });
+
+    if (!newMaterial) {
+        console.warn(`Nie znaleziono materiału o nazwie: ${targetMaterialName}`);
+        return;
+    }
+
+    newMaterial.side = v3d.DoubleSide;
+
+    // Podmień materiał we wszystkich obiektach
+    this.#app.scene.traverse((object) => {
+        // Sprawdź czy obiekt lub jego rodzice mają oznaczenie NoColorChange
+        if (this.shouldSkipObject(object)) {
+            console.log(`Pominięto obiekt: ${object.name} (NoColorChange)`);
+            return;
+        }
+
+        if (object.isMesh && object.material) {
+            let shouldReplace = false;
+
+            if (Array.isArray(object.material)) {
+                // Sprawdź każdy materiał w tablicy
+                for (let i = 0; i < object.material.length; i++) {
+                    const mat = object.material[i];
+                    if (mat.name === this.#currentWallMaterialName) {
+                        // Zastąp tylko ten konkretny materiał w tablicy
+                        object.material[i] = newMaterial;
+                        shouldReplace = true;
+                        console.log(`Zmieniono materiał w tablicy [${i}] na "${targetMaterialName}" w obiekcie "${object.name}"`);
+                    }
+                }
+            } else {
+                // Pojedynczy materiał
+                if (object.material.name === this.#currentWallMaterialName || object.material.name === targetMaterialName) {
+                    object.material = newMaterial;
+                    shouldReplace = true;
+                    console.log(`Zmieniono materiał na "${targetMaterialName}" w obiekcie "${object.name}"`);
+                }
+            }
+        }
+    });
+
+    // Zaktualizuj nazwę aktualnego materiału ściany
+    this.#currentWallMaterialName = targetMaterialName;
+
+    this.#app.needRender = true;
+}
+
+
+
   // Hide room information
   hideRoomInfo() {
     if (this.#infoPanel) {
@@ -224,48 +680,11 @@ class V3DApp extends React.Component {
     }
   }
 
-  // Toggle info points visibility
-  // toggleInfoPoints(cameraName) {
-  //   console.log(`toggleInfoPoints called with: ${cameraName}, points count: ${this.#infoPoints.length}`);
-  //   // if (show === 'Camera(orbit)'){
-  //   //   this.#infoPoints.forEach((point, index) => {
-  //   //     point.visible = true;
-  //   //
-  //   //   console.log(`Point ${index} (${point.userData.infoPointName}) visibility set to: ${show}`);
-  //   //   });
-  //   // }
-  //   // else if (show === 'Camera(FPS)'){
-  //   //   this.#infoPoints.forEach((point, index) => {
-  //   //     point.visible = false;
-  //   //
-  //   //   console.log(`Point ${index} (${point.userData.infoPointName}) visibility set to: ${show}`);
-  //   //   });
-  //   // }
-  //
-  //   const shouldShow = cameraName === 'Camera(orbit)';
-  //
-  //     this.#infoPoints.forEach((point, index) => {
-  //       point.visible = shouldShow;
-  //       console.log('czy widac pilki:' + shouldShow )
-  //       this.#app.render();
-  //
-  //       point.matrixWorldNeedsUpdate = true;  // Wymusza aktualizację
-  //       console.log(`Point ${index} visibility changed from ... to ${point.visible}`);
-  //
-  //       // Sprawdź czy punkt jest rzeczywiście w scenie
-  //       if (!point.parent) {
-  //         console.warn(`Point ${index} is not in scene!`);
-  //       }
-  //     });
-  //
-  //     // Wymusi ponowne renderowanie
-  //     if (this.#app && this.#app.scene) {
-  //       if (this.#app.render) {
-  //         this.#app.render();
-  //       }
-  // }
-  //
-  // }
+hideColorChangePanel() {
+    if (this.#colorChangePanel) {
+        this.#colorChangePanel.style.display = 'none';
+    }
+}
 toggleInfoPoints(cameraName) {
     console.log(`toggleInfoPoints called with: ${cameraName}, points count: ${this.#infoPoints.length}`);
 
@@ -307,6 +726,57 @@ toggleInfoPoints(cameraName) {
             this.#app.render();
         }
     }
+
+
+
+    // Debug: sprawdź stan punktów po aktualizacji
+    setTimeout(() => {
+        console.log('=== Stan punktów po aktualizacji ===');
+        this.#infoPoints.forEach((point, index) => {
+            console.log(`Point ${index}: visible=${point.visible}, inScene=${!!point.parent}`);
+        });
+    }, 100);
+}
+
+toggleColorPoints(cameraName) {
+
+    const shouldShow = cameraName === 'Camera(orbit)';
+    console.log('shouldShow:', shouldShow);
+
+    // Najpierw ustaw wszystkie punkty
+    this.#colorChangePoints.forEach((point, index) => {
+        const previousVisibility = point.visible;
+        point.visible = shouldShow;
+        point.matrixWorldNeedsUpdate = true;
+
+        // Dodatkowe wymuszenie aktualizacji dla Three.js
+        if (point.material) {
+            point.material.needsUpdate = true;
+        }
+
+        // Sprawdź czy punkt jest w scenie
+        if (!point.parent) {
+            console.warn(`Point ${index} is not in scene!`);
+        }
+    });
+
+    // Wymusi pełną aktualizację sceny
+    if (this.#app && this.#app.scene) {
+        this.#app.scene.updateMatrixWorld(true);
+
+        this.#app.scene.traverse((object) => {
+            if (object.userData && object.userData.colorPointName) {
+                object.visible = shouldShow;
+            }
+        });
+
+        // Dopiero teraz renderuj
+        if (this.#app.render) {
+            this.#app.render();
+        }
+    }
+
+
 
     // Debug: sprawdź stan punktów po aktualizacji
     setTimeout(() => {
@@ -407,9 +877,8 @@ toggleInfoPoints(cameraName) {
             this.#app.controls.target.copy(defaults.target);
             this.#app.controls.update();
           }
-
-          // Poprawiona logika ukrywania/pokazywania punktów
           this.toggleInfoPoints(nextCamera);
+          this.toggleColorPoints(nextCamera)
 
 
           // Zaktualizuj aktualną kamerę
@@ -436,6 +905,9 @@ toggleInfoPoints(cameraName) {
     }
     if (this.#infoPanel && this.#infoPanel.parentNode) {
       this.#infoPanel.parentNode.removeChild(this.#infoPanel);
+    }
+    if (this.#colorChangePanel && this.#colorChangePanel.parentNode) {
+      this.#colorChangePanel.parentNode.removeChild(this.#colorChangePanel);
     }
 
     this.#app?.dispose();

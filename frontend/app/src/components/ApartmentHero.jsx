@@ -12,10 +12,15 @@ function ApartmentHero() {
         <div className="hero-item">
           <img className="image" src={apartImg}></img>
           <h4>A modern apartment - see its potential.</h4>
-          <Link to="/product/Model1" className="more link">
-            More
-            {<FontAwesomeIcon icon={faChevronRight} />}
-          </Link>
+          <Link
+          to="/product/Model1"
+          state={{ modelName: "Model1" }}
+          className="more link"
+        >
+          More <FontAwesomeIcon icon={faChevronRight} />
+        </Link>
+
+
         </div>
       </div>
     </div>
@@ -23,3 +28,10 @@ function ApartmentHero() {
 }
 
 export default ApartmentHero;
+
+
+
+     {/*<Link to="/product/Model1" className="more link">*/}
+          {/*  More*/}
+          {/*  {<FontAwesomeIcon icon={faChevronRight} />}*/}
+          {/*</Link>*/}

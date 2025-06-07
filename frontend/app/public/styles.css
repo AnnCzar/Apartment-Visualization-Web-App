@@ -346,8 +346,9 @@ form textarea {
   .more {
     width: 40%;
     height: 38px;
-    font-size: 16px;
+    font-size: 16px
   }
+
   .apartment-hero {
     margin-top: 30px;
     margin-bottom: 10px;

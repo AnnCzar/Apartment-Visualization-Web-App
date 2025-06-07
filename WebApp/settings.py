@@ -78,7 +78,8 @@ WSGI_APPLICATION = 'WebApp.wsgi.application'
 
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5174",  # React dev server
+    "http://localhost:5174",
+    "http://localhost:5173",# React dev server
     "http://localhost:3000",  # STANDART  React port
     "http://127.0.0.1:5174",  # ALTERNATIVE host
 ]
