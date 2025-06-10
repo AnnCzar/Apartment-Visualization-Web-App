@@ -6,7 +6,7 @@ window.addEventListener('load', e => {
     createApp({
         containerId: 'v3d-container',
         fsButtonId: 'fullscreen-button',
-        sceneURL: params.load || 'model3.gltf',
+        sceneURL: params.load || 'model3Marta.gltf',
         logicURL: params.logic || 'visual_logic.js',
     });
 });

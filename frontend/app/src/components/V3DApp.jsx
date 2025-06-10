@@ -1,6 +1,8 @@
 import React from 'react';
 import { createApp as createAppModel1 } from '../v3dApp/Model1.js';
 import '../v3dApp/Model1.css';
+import { createApp as createAppModel2 } from '../v3dApp3/model2.js';
+import '../v3dApp3/model2.css';
 import { createApp as createAppModel3 } from '../v3dApp2/model3Marta.js';
 import '../v3dApp2/model3Marta.css';
 
@@ -24,12 +26,14 @@ class V3DApp extends React.Component {
   #materialMap = {};
   #currentWallMaterialName = null;
   #isLoading = false;
+  #infoPointColor = 0xffffff;
 
     #models = {
   Model1: {
     modelName: 'Model1',
     sceneURL: '/v3dApp/Model1.gltf',
     createApp: createAppModel1,
+    infoPointColor: "#001542",
     colors: {
       "wall1_color_1": "#00174EFF",
       "wall_1_color_2": "#4E0B07FF",
@@ -46,22 +50,36 @@ class V3DApp extends React.Component {
     },
     roomData: {
       'InfoPoint_kitchen+livingroom': { name: 'Kuchnia z salonem', area: '33.5 m²' },
-        'InfoPoint_corridor': { name: 'Korytarz', area: '15.2 m²' },
-        'InfoPoint_office': { name: 'Biuro', area: '6.6 m²' },
-        'InfoPoint_bathroom': { name: 'Łazienka', area: '6 m²' },
-        'InfoPoint_room1': { name: 'Pokój 1', area: '10.5 m²' },
-        'InfoPoint_room2': { name: 'Pokój 2', area: '12.4 m²' },
-        'InfoPoint_room3': { name: 'Pokój 3', area: '13.5 m²' },
-        'InfoPoint_toilet': { name: 'Toaleta', area: '2 m²' },
-        'InfoPoint_wardrobe': { name: 'Garderoba', area: '3.1 m²' }
+        'InfoPoint_corridor': { name: 'Corridor', area: '15.2 m²' },
+        'InfoPoint_office': { name: 'Office', area: '6.6 m²' },
+        'InfoPoint_bathroom': { name: 'Bathroom', area: '6 m²' },
+        'InfoPoint_room1': { name: 'Room 1', area: '10.5 m²' },
+        'InfoPoint_room2': { name: 'Room 2', area: '12.4 m²' },
+        'InfoPoint_room3': { name: 'Room 3', area: '13.5 m²' },
+        'InfoPoint_toilet': { name: 'Toilet', area: '2 m²' },
+        'InfoPoint_wardrobe': { name: 'Wardrobe', area: '3.1 m²' }
     },
     currentWallMaterial: "White office wall.001"
   },
+  Model2: {
+    modelName: 'Model2',
+    sceneURL: '/v3dApp3/model2.gltf',
+    createApp: createAppModel2,
+    infoPointColor: 0xffffff,
+    roomData: {
+      'InfoPoint_kitchen': { name: 'Kitchen with livingroom', area: '33.5 m²' },
+        'InfoPoint_balcony': { name: 'Balcony', area: '15.2 m²' },
+        'InfoPoint_bathroom': { name: 'Bathroom', area: '6 m²' },
+        'InfoPoint_room1': { name: 'Room 1', area: '10.5 m²' },
+        'InfoPoint_hall': { name: 'Hall', area: '2 m²' }
+    },
 
+  },
   Model3: {
     modelName: 'Model3',
     sceneURL: '/v3dApp2/model3Marta.gltf',
     createApp: createAppModel3,
+     infoPointColor: 0xff0000,
     colors: {
       "wall1_color_1": "#131752FF",
       "wall_1_color_2": "#3F0002FF",
@@ -79,14 +97,14 @@ class V3DApp extends React.Component {
       "#403E3EFF": "Painted Plaster Wall"
     },
     roomData: {
-      'InfoPoint_livingroom': { name: 'Kuchnia z salonem', area: '42,9 m²' },
-        'InfoPoint_hall': { name: 'Przedpokój', area: '5,9 m²' },
-        'InfoPoint_corridor': { name: 'Korytarz', area: '12.0 m²' },
-        'InfoPoint_bathroom': { name: 'Łazienka', area: '7,8 m²' },
-        'InfoPoint_room1': { name: 'Pierwsza sypialnia', area: '15,2 m²' },
-        'InfoPoint_room2': { name: 'Druga sypialnia', area: '19,1 m²' },
-        'InfoPoint_room3': { name: 'Trzecia sypialnia', area: '14,72 m²' },
-        'InfoPoint_garderoba': { name: 'Garderoba', area: '3,6 m²' }
+      'InfoPoint_livingroom': { name: 'Kitechen with livingroom', area: '42,9 m²' },
+        'InfoPoint_hall': { name: 'Hall', area: '5,9 m²' },
+        'InfoPoint_corridor': { name: 'Corridor', area: '12.0 m²' },
+        'InfoPoint_bathroom': { name: 'Bathroom', area: '7,8 m²' },
+        'InfoPoint_room1': { name: 'Room 1', area: '15,2 m²' },
+        'InfoPoint_room2': { name: 'Room 1', area: '19,1 m²' },
+        'InfoPoint_room3': { name: 'Room 3', area: '14,72 m²' },
+        'InfoPoint_garderoba': { name: 'Wardrobe', area: '3,6 m²' }
     },
     currentWallMaterial: "Painted Plaster Wall"
   }
@@ -274,7 +292,7 @@ class V3DApp extends React.Component {
     this.#materialMap = model.materialMap;
     this.#roomData = model.roomData;
     this.#currentWallMaterialName = model.currentWallMaterial;
-
+    this.#infoPointColor = model.infoPointColor || 0xffffff;
     // Clean up existing app
     if (this.#app) {
       try {
@@ -304,7 +322,7 @@ class V3DApp extends React.Component {
       return;
 
     }
-    // Clear existing info points
+
     this.#infoPoints = [];
     this.#colorChangePoints = [];
 
@@ -331,7 +349,7 @@ class V3DApp extends React.Component {
         // Create visible indicator
         const geometry = new window.v3d.SphereGeometry(0.1, 16, 16);
         const material = new window.v3d.MeshBasicMaterial({
-          color: 0xffffff,
+          color: this.#infoPointColor,
           opacity: 0.7,
           transparent: true,
         });
@@ -393,7 +411,8 @@ class V3DApp extends React.Component {
     // Ustaw początkową widoczność punktów na podstawie aktualnej kamery
     const isOrbitCamera = this.#currentCamera === 'Camera(orbit)';
     this.toggleInfoPoints(this.#currentCamera);
-    this.toggleColorPoints(this.#currentCamera)
+    this.toggleColorPoints(this.#currentCamera);
+    this.toggleCeiling(this.#currentCamera);
     console.log(`Initial info points visibility: ${isOrbitCamera} for camera: ${this.#currentCamera}`);
 
     // Create info panel and setup click detection
@@ -540,7 +559,7 @@ setupClickDetection() {
 
     this.#infoPanel.innerHTML = `
       <h3 style="margin: 0 0 10px 0; font-size: 18px;">${room.name}</h3>
-      <p style="margin: 0; font-size: 14px;">Powierzchnia: ${room.area}</p>
+      <p style="margin: 0; font-size: 14px;">Area: ${room.area}</p>
     `;
 
     this.#infoPanel.style.left = `${x + 15}px`;
@@ -737,6 +756,32 @@ toggleInfoPoints(cameraName) {
         });
     }, 100);
 }
+toggleCeiling(cameraName) {
+    const shouldShow = cameraName === 'Camera(FPS)';
+    console.log(`Toggleing ceiling visibility: ${shouldShow} for camera: ${cameraName}`);
+
+    this.#app.scene.traverse((object) => {
+        if (object.name && object.name.toLowerCase().includes('ceiling')) {
+            const previousVisibility = object.visible;
+            object.visible = shouldShow;
+            object.matrixWorldNeedsUpdate = true;
+
+            if (object.material) {
+                object.material.needsUpdate = true;
+            }
+
+            console.log(`Ceiling object "${object.name}" visibility: ${previousVisibility} -> ${object.visible}`);
+        }
+    });
+
+    if (this.#app && this.#app.scene) {
+        this.#app.scene.updateMatrixWorld(true);
+
+        if (this.#app.render) {
+            this.#app.render();
+        }
+    }
+}
 
 toggleColorPoints(cameraName) {
 
@@ -878,7 +923,8 @@ toggleColorPoints(cameraName) {
             this.#app.controls.update();
           }
           this.toggleInfoPoints(nextCamera);
-          this.toggleColorPoints(nextCamera)
+          this.toggleColorPoints(nextCamera);
+           this.toggleCeiling(nextCamera);
 
 
           // Zaktualizuj aktualną kamerę

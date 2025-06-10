@@ -17,7 +17,7 @@ function ApartmentDetails() {
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  const [developerInfo, setDeveloperInfo] = useState(null);
   const [modalIsVisible, setModalIsVisible] = useState(false);
 
   function hideModal(){
@@ -32,9 +32,9 @@ function ApartmentDetails() {
       try {
         setLoading(true);
 
-        const baseURL = 'http://localhost:8000'; // lub http://127.0.0.1:8000
+        // const baseURL = 'http://localhost:8000'; // lub http://127.0.0.1:8000
 
-
+        const baseURL = 'https://zig-backend-nnq5.onrender.com';
         const basicResponse = await fetch(`${baseURL}/basic/${modelName}/`);
         if (!basicResponse.ok) {
           throw new Error('Failed to fetch basic info');
@@ -48,7 +48,14 @@ function ApartmentDetails() {
         }
         const roomsData = await roomsResponse.json();
         setRooms(roomsData.rooms || []);
+        const developerResponse = await fetch(`${baseURL}/developer/${modelName}/`);
+        if (!developerResponse.ok) {
+          throw new Error('Failed to fetch developer info');
+        }
 
+        const developerData = await developerResponse.json();
+        console.log(developerData + "dupa")
+        setDeveloperInfo(developerData);
       } catch (err) {
         setError(err.message);
         console.error('Error fetching apartment data:', err);
@@ -63,6 +70,8 @@ function ApartmentDetails() {
   console.log("Model name:", modelName);
   console.log("Basic info:", basicInfo);
   console.log("Rooms:", rooms);
+  console.log("Developer info:", developerInfo);
+
 
   // Loading state
   if (loading) {
@@ -92,7 +101,7 @@ function ApartmentDetails() {
 
     return (
         <>
-          {modalIsVisible?<Modal onClose={hideModal}><ContactForm onClose={hideModal}/></Modal>:null}
+          {modalIsVisible?<Modal onClose={hideModal}><ContactForm onClose={hideModal} developerInfo={developerInfo}/></Modal>:null}
           <div className="apartment-details">
             <div className="details-item">
               <div className="verge3d-app">
@@ -105,6 +114,8 @@ function ApartmentDetails() {
                   <DetailRow label="AREA" value={`${basicInfo.area_sum} m²`} />
                   <DetailRow label="FLOOR" value={basicInfo.floor} />
                   <DetailRow label="ROOMS" value={basicInfo.rooms_sum} />
+                  <DetailRow label="ADDRESS" value={basicInfo.localisation} />
+                  <DetailRow label="PRICE" value={`${basicInfo.price} zl `}/>
 
                   <button
                     className="toggle-button"

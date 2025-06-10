@@ -531,3 +531,15 @@ form textarea {
     padding: 6px;
   }
 }
+.card-button-container {
+  text-align: center;
+  margin: 15px 0;
+  background-color: #E8E3D8FF;
+  padding: 12px 14px;
+  border-radius: 30px;
+  text-decoration: none;
+
+
+
+
+}
