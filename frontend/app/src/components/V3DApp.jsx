@@ -1,4 +1,5 @@
 import React from 'react';
+import * as v3d from 'verge3d';
 import { createApp as createAppModel1 } from '../v3dApp/Model1.js';
 import '../v3dApp/Model1.css';
 import { createApp as createAppModel2 } from '../v3dApp3/model2.js';
@@ -59,7 +60,7 @@ class V3DApp extends React.Component {
         'InfoPoint_toilet': { name: 'Toilet', area: '2 m²' },
         'InfoPoint_wardrobe': { name: 'Wardrobe', area: '3.1 m²' }
     },
-    currentWallMaterial: "White office wall.001"
+    currentWallMaterial: "White office wall"
   },
   Model2: {
     modelName: 'Model2',
@@ -177,7 +178,6 @@ class V3DApp extends React.Component {
         throw new Error('Failed to initialize cameras');
       }
 
-      // Initialize the rest of the functionality
       this.getDefaultCamerasSettings();
       this.initCameraSwitchButton();
       this.#currentCamera = 'Camera(orbit)';
@@ -325,10 +325,11 @@ class V3DApp extends React.Component {
 
     this.#infoPoints = [];
     this.#colorChangePoints = [];
+    console.log('=== DEBUGING INFO POINTS ===');
 
-    const textureLoader = new window.v3d.TextureLoader();
+    const textureLoader = new v3d.TextureLoader();
    const spriteMap = textureLoader.load(
-  '/public/v3dApp/paint-brush-solid.svg',
+  '/v3dApp/paint-brush-solid.svg',
   (texture) => {
     console.log(' Tekstura załadowana pomyślnie:', texture.image?.src || texture);
   },
@@ -341,26 +342,23 @@ class V3DApp extends React.Component {
     const borderScaleFactor = 1.3;
 
 
-    // Find all objects whose name starts with "InfoPoint_"
     this.#app.scene.traverse((object) => {
       if (object.name.startsWith('InfoPoint_')) {
         console.log(`Found info point: ${object.name}`);
 
-        // Create visible indicator
-        const geometry = new window.v3d.SphereGeometry(0.1, 16, 16);
-        const material = new window.v3d.MeshBasicMaterial({
+        const geometry = new v3d.SphereGeometry(0.1, 16, 16);
+        const material = new v3d.MeshBasicMaterial({
           color: this.#infoPointColor,
           opacity: 0.7,
           transparent: true,
         });
-        const indicator = new window.v3d.Mesh(geometry, material);
+        const indicator = new v3d.Mesh(geometry, material);
 
-        // Position indicator at the empty object's location
+
         indicator.position.copy(object.position);
         indicator.quaternion.copy(object.quaternion);
         indicator.scale.copy(object.scale);
 
-        // Important settings for collision detection
         indicator.userData.infoPointName = object.name;
         indicator.visible = true;
         indicator.renderOrder = 999;
@@ -373,22 +371,22 @@ class V3DApp extends React.Component {
       if (object.name.startsWith('PaintIcon_')) {
       console.log(`Found color change point: ${object.name}`);
 
-      const borderMaterial = new window.v3d.SpriteMaterial({
+      const borderMaterial = new v3d.SpriteMaterial({
         map: spriteMap,
         color: 0x000000,
       });
 
-      const borderSprite = new window.v3d.Sprite(borderMaterial);
+      const borderSprite = new v3d.Sprite(borderMaterial);
       borderSprite.position.copy(object.position);
       borderSprite.quaternion.copy(object.quaternion);
       borderSprite.scale.copy(object.scale).multiplyScalar(iconScale * borderScaleFactor);
       borderSprite.renderOrder = 998;
 
-      const spriteMaterial = new window.v3d.SpriteMaterial({
+      const spriteMaterial = new v3d.SpriteMaterial({
         map: spriteMap,
       });
 
-      const indicator = new window.v3d.Sprite(spriteMaterial);
+      const indicator = new v3d.Sprite(spriteMaterial);
       indicator.position.copy(object.position);
       indicator.quaternion.copy(object.quaternion);
       indicator.scale.copy(object.scale).multiplyScalar(iconScale);
@@ -415,17 +413,14 @@ class V3DApp extends React.Component {
     this.toggleCeiling(this.#currentCamera);
     console.log(`Initial info points visibility: ${isOrbitCamera} for camera: ${this.#currentCamera}`);
 
-    // Create info panel and setup click detection
     this.createInfoPanel();
     this.createColorChangePanel();
     this.setupClickDetection();
   }
 
-    // Create information panel
   createInfoPanel() {
     console.log('Creating info panel');
 
-    // Remove existing panel if it exists
     if (this.#infoPanel && this.#infoPanel.parentNode) {
       this.#infoPanel.parentNode.removeChild(this.#infoPanel);
     }
@@ -433,7 +428,6 @@ class V3DApp extends React.Component {
     this.#infoPanel = document.createElement('div');
     this.#infoPanel.id = `info-panel-${this.#uuid}`;
 
-    // Styling
     this.#infoPanel.style.position = 'absolute';
     this.#infoPanel.style.backgroundColor = 'rgba(238, 231, 231, 0.47)';
     this.#infoPanel.style.color = 'white';
@@ -486,7 +480,6 @@ class V3DApp extends React.Component {
     } else {
         console.error('Nie znaleziono kontenera v3d-container');
 
-        // Awaryjnie dodaj do body, jeśli kontener nie istnieje
         document.body.appendChild(this.#colorChangePanel);
         console.log('Panel dodany awaryjnie do body');
     }
@@ -496,10 +489,9 @@ class V3DApp extends React.Component {
 
   }
 
-// Setup click detection for info points and color change points
 setupClickDetection() {
-  const raycaster = new window.v3d.Raycaster();
-  const mouse = new window.v3d.Vector2();
+  const raycaster = new v3d.Raycaster();
+  const mouse = new v3d.Vector2();
 
   const container = document.getElementById(this.#containerId);
   if (!container) {
@@ -514,41 +506,75 @@ setupClickDetection() {
 
     raycaster.setFromCamera(mouse, this.#app.camera);
 
-    // 🔹 1. Sprawdzenie kliknięcia w infoPoints
-    const infoIntersects = raycaster.intersectObjects(this.#infoPoints);
-    if (infoIntersects.length > 0) {
-      const point = infoIntersects[0].object;
-      console.log('Hit infoPoint:', point.userData.infoPointName);
+    console.log('=== CLICK DETECTION DEBUG ===');
+    console.log('Available info points:', this.#infoPoints.length);
+    console.log('Available color points:', this.#colorChangePoints.length);
 
-      const room = this.#roomData[point.userData.infoPointName];
-      if (room) {
-        this.showRoomInfo(room, event.clientX, event.clientY);
-      } else {
-        console.log('No data for room:', point.userData.infoPointName);
+    if (this.#infoPoints.length > 0) {
+      const infoIntersects = raycaster.intersectObjects(this.#infoPoints);
+      console.log('Info intersects found:', infoIntersects.length);
+
+      if (infoIntersects.length > 0) {
+        const point = infoIntersects[0].object;
+
+        const room = this.#roomData[point.userData.infoPointName];
+        console.log('Room data for this point:', room);
+
+        if (room) {
+          this.showRoomInfo(room, event.clientX, event.clientY);
+          return; // ← WAŻNE: return żeby nie sprawdzać dalej
+        } else {
+          console.warn('No room data found for:', point.userData.infoPointName);
+        }
       }
-
-      return;
     }
 
-    const colorIntersects = raycaster.intersectObjects(this.#colorChangePoints);
-    if (colorIntersects.length > 0) {
-      const point = colorIntersects[0].object;
+    if (this.#colorChangePoints.length > 0) {
+      const colorIntersects = raycaster.intersectObjects(this.#colorChangePoints);
 
-      this.showColorChangePanel(
-        point.userData.colorPointName,
-        event.clientX,
-        event.clientY
-      );
+      if (colorIntersects.length > 0) {
+        const point = colorIntersects[0].object;
 
-      return;
+        const screenPosition = this.convert3DToScreenPosition(point.position, container);
+        this.showColorChangePanel(
+          point.userData.colorPointName,
+          screenPosition.x,
+          screenPosition.y
+        );
+        return;
+      }
     }
 
+    console.log('No intersections found, hiding panels');
     this.hideRoomInfo();
-    this.hideColorChangePanel?.(); // użyj opcjonalnego wywołania, jeśli metoda nie zawsze istnieje
+    this.hideColorChangePanel();
   });
 }
+convert3DToScreenPosition(position3D, container) {
 
-  // Show room information
+  const vector = new v3d.Vector3();
+  vector.copy(position3D);
+
+
+  vector.project(this.#app.camera);
+
+  const rect = container.getBoundingClientRect();
+
+  const screenX = Math.round((vector.x + 1) / 2 * rect.width);
+  const screenY = Math.round((-vector.y + 1) / 2 * rect.height);
+
+  console.log('3D Position:', position3D);
+  console.log('Screen Position:', { x: screenX, y: screenY });
+  console.log('Container rect:', rect);
+
+  return {
+    x: screenX,
+    y: screenY
+  };
+}
+
+
+
   showRoomInfo(room, x, y) {
     console.log('Attempting to show info:', room, x, y);
 
@@ -568,51 +594,84 @@ setupClickDetection() {
     console.log('Panel should be visible now:', this.#infoPanel);
   }
 
-  showColorChangePanel(x, y, app) {
-      if (!this.#colorChangePanel) {
-        console.error('Panel nie istnieje!');
-        return;
-    }
-      this.#colorChangePanel.innerHTML = `
-        <h3 style="margin: 0 0 10px 0; font-size: 16px;">Zmień kolor ściany</h3>
-        <div id="color-options" style="display: flex; gap: 10px; flex-wrap: wrap;"></div>
-    `;
-      const colorOptionsDiv = this.#colorChangePanel.querySelector('#color-options');
 
-    for (const [id, hex] of Object.entries(this.#colors)) {
-        const colorButton = document.createElement('div');
-        colorButton.style.width = '30px';
-        colorButton.style.height = '30px';
-        colorButton.style.borderRadius = '5px';
-        colorButton.style.backgroundColor = hex;
-        colorButton.style.cursor = 'pointer';
-        colorButton.title = hex;
-        colorButton.style.border = '2px solid white';
-        colorButton.style.boxShadow = '0 0 5px rgba(0,0,0,0.5)';
+showColorChangePanel(colorPointName, x, y) {
+  if (!this.#colorChangePanel) {
+    console.error('Panel nie istnieje!');
+    return;
+  }
 
-        colorButton.addEventListener('click', () => {
-            this.changeWallColor(hex, app);
-            // colorChangePanel.style.display = 'none';
-        });
+  this.#colorChangePanel.innerHTML = `
+    <h3 style="margin: 0 0 10px 0; font-size: 16px;">Zmień kolor ściany</h3>
+    <div id="color-options" style="display: flex; gap: 10px; flex-wrap: wrap;"></div>
+  `;
 
-        colorOptionsDiv.appendChild(colorButton);
-      }
+  const colorOptionsDiv = this.#colorChangePanel.querySelector('#color-options');
 
-      this.#colorChangePanel.style.left = `${x + 15}px`;
-      this.#colorChangePanel.style.top = `${y - 15}px`;
-      this.#colorChangePanel.style.display = 'block';
-      this.#colorChangePanel.style.pointerEvents = 'auto';
+  for (const [id, hex] of Object.entries(this.#colors)) {
+    const colorButton = document.createElement('div');
+    colorButton.style.width = '30px';
+    colorButton.style.height = '30px';
+    colorButton.style.borderRadius = '5px';
+    colorButton.style.backgroundColor = hex;
+    colorButton.style.cursor = 'pointer';
+    colorButton.title = hex;
+    colorButton.style.border = '2px solid white';
+    colorButton.style.boxShadow = '0 0 5px rgba(0,0,0,0.5)';
+
+    colorButton.addEventListener('click', () => {
+      this.changeWallColor(hex);
+      this.hideColorChangePanel();
+    });
+
+    colorOptionsDiv.appendChild(colorButton);
+  }
+
+  const container = document.getElementById(this.#containerId);
+  const containerRect = container.getBoundingClientRect();
+
+  console.log('Pozycjonuję panel na:', { x, y });
+  console.log('Container rect:', containerRect);
+
+  const finalX = containerRect.left + x + 15; // Offset w prawo od pędzla
+  const finalY = containerRect.top + y - 15;  // Offset w górę od pędzla
+
+  const panelWidth = 200;
+  const panelHeight = 100;
+
+  let adjustedX = finalX;
+  let adjustedY = finalY;
+
+  if (finalX + panelWidth > window.innerWidth) {
+    adjustedX = containerRect.left + x - panelWidth - 15;
+  }
+  if (finalY < 0) {
+    adjustedY = containerRect.top + y + 15;
+  }
+
+  this.#colorChangePanel.style.position = 'fixed';
+  this.#colorChangePanel.style.left = `${adjustedX}px`;
+  this.#colorChangePanel.style.top = `${adjustedY}px`;
+  this.#colorChangePanel.style.display = 'block';
+  this.#colorChangePanel.style.pointerEvents = 'auto';
+  this.#colorChangePanel.style.zIndex = '1000';
+
+  console.log('Panel ustawiony na:', {
+    left: adjustedX,
+    top: adjustedY,
+    position: 'fixed'
+  });
 }
 
 
 shouldSkipObject(object) {
     let current = object;
     while (current) {
-        // Sprawdź nazwę obiektu
+
         if (current.name && current.name.startsWith('NoColorChange_')) {
             return true;
         }
-        // Sprawdź userData
+
         if (current.userData && current.userData.noColorChange) {
             return true;
         }
@@ -623,6 +682,7 @@ shouldSkipObject(object) {
 
 changeWallColor(hex, app) {
     const targetMaterialName = this.#materialMap[hex];
+
 
     if (!targetMaterialName) {
         console.warn(`Brak przypisanego materiału dla koloru ${hex}`);
@@ -663,11 +723,10 @@ changeWallColor(hex, app) {
             let shouldReplace = false;
 
             if (Array.isArray(object.material)) {
-                // Sprawdź każdy materiał w tablicy
                 for (let i = 0; i < object.material.length; i++) {
                     const mat = object.material[i];
                     if (mat.name === this.#currentWallMaterialName) {
-                        // Zastąp tylko ten konkretny materiał w tablicy
+
                         object.material[i] = newMaterial;
                         shouldReplace = true;
                         console.log(`Zmieniono materiał w tablicy [${i}] na "${targetMaterialName}" w obiekcie "${object.name}"`);
@@ -691,8 +750,6 @@ changeWallColor(hex, app) {
 }
 
 
-
-  // Hide room information
   hideRoomInfo() {
     if (this.#infoPanel) {
       this.#infoPanel.style.display = 'none';
@@ -710,45 +767,39 @@ toggleInfoPoints(cameraName) {
     const shouldShow = cameraName === 'Camera(orbit)';
     console.log('shouldShow:', shouldShow);
 
-    // Najpierw ustaw wszystkie punkty
+
     this.#infoPoints.forEach((point, index) => {
         const previousVisibility = point.visible;
         point.visible = shouldShow;
         point.matrixWorldNeedsUpdate = true;
 
-        // Dodatkowe wymuszenie aktualizacji dla Three.js
         if (point.material) {
             point.material.needsUpdate = true;
         }
 
         console.log(`Point ${index} (${point.userData.infoPointName}) visibility: ${previousVisibility} -> ${point.visible}`);
 
-        // Sprawdź czy punkt jest w scenie
+
         if (!point.parent) {
             console.warn(`Point ${index} is not in scene!`);
         }
     });
 
-    // Wymusi pełną aktualizację sceny
     if (this.#app && this.#app.scene) {
         this.#app.scene.updateMatrixWorld(true);
 
-        // Alternatywnie, spróbuj też tego podejścia:
         this.#app.scene.traverse((object) => {
             if (object.userData && object.userData.infoPointName) {
                 object.visible = shouldShow;
             }
         });
 
-        // Dopiero teraz renderuj
         if (this.#app.render) {
             this.#app.render();
         }
     }
 
 
-
-    // Debug: sprawdź stan punktów po aktualizacji
     setTimeout(() => {
         console.log('=== Stan punktów po aktualizacji ===');
         this.#infoPoints.forEach((point, index) => {
@@ -794,18 +845,16 @@ toggleColorPoints(cameraName) {
         point.visible = shouldShow;
         point.matrixWorldNeedsUpdate = true;
 
-        // Dodatkowe wymuszenie aktualizacji dla Three.js
         if (point.material) {
             point.material.needsUpdate = true;
         }
 
-        // Sprawdź czy punkt jest w scenie
         if (!point.parent) {
             console.warn(`Point ${index} is not in scene!`);
         }
     });
 
-    // Wymusi pełną aktualizację sceny
+
     if (this.#app && this.#app.scene) {
         this.#app.scene.updateMatrixWorld(true);
 
@@ -815,15 +864,12 @@ toggleColorPoints(cameraName) {
             }
         });
 
-        // Dopiero teraz renderuj
         if (this.#app.render) {
             this.#app.render();
         }
     }
 
 
-
-    // Debug: sprawdź stan punktów po aktualizacji
     setTimeout(() => {
         console.log('=== Stan punktów po aktualizacji ===');
         this.#infoPoints.forEach((point, index) => {
@@ -899,9 +945,7 @@ toggleColorPoints(cameraName) {
     this.#switchButton.addEventListener('mouseout', () => {
       this.#switchButton.style.backgroundColor = '#333';
     });
-
-
-    // const defaultCameraSettings = {};    // info o domyślnych ustawieniach kamery
+    
 
     this.#switchButton.addEventListener('click', () => {
       if (!this.#app) return;

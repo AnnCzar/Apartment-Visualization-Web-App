@@ -1,6 +1,6 @@
 /* __V3D_TEMPLATE__ - template-based file; delete this line to prevent this file from being updated */
 
-import v3d from "./v3d.js";
+import * as v3d from 'verge3d';
 'use strict';
 
 // window.addEventListener('load', e => {
