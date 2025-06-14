@@ -54,7 +54,6 @@ function ApartmentDetails() {
         }
 
         const developerData = await developerResponse.json();
-        console.log(developerData + "dupa")
         setDeveloperInfo(developerData);
       } catch (err) {
         setError(err.message);
