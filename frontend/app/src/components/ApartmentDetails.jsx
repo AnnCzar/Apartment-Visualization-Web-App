@@ -32,9 +32,11 @@ function ApartmentDetails() {
       try {
         setLoading(true);
 
-        // const baseURL = 'http://localhost:8000'; // lub http://127.0.0.1:8000
+        const baseURL = 'http://localhost:8000';
+        // lub http://127.0.0.1:8000 - local server
 
-        const baseURL = 'https://zig-backend-nnq5.onrender.com';
+        // const baseURL = 'https://zig-backend-nnq5.onrender.com';
+
         const basicResponse = await fetch(`${baseURL}/basic/${modelName}/`);
         if (!basicResponse.ok) {
           throw new Error('Failed to fetch basic info');
